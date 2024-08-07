@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>맥주와 음식 웹 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #ffbf00;
+            color: white;
+            padding: 10px 5%;
+            text-align: center;
+            position: relative;
+        }
+
+        #soundControl {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        img {
+            width: 80%;
+            height: auto;
+            margin: 2% auto;
+            display: block;
+        }
+
+        main {
+            padding: 2% 5%;
+        }
+
+        section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 5%;
+        }
+
+        h1, h2, h3 {
+            font-size: calc(12px + 1.5vw);
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .quantity-control button {
+            background-color: #f1f1f1;
+            color: #333;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: calc(12px + 0.5vw);
+        }
+
+        .quantity-control button:hover {
+            background-color: #ddd;
+        }
+
+        .quantity {
+            padding: 5px 10px;
+            text-align: center;
+            border: none;
+            min-width: 40px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: calc(10px + 1vw);
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+        }
+
+        #modal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1001;
+        }
+
+        #modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            header, main, footer {
+                padding: 10px 3%;
+            }
+
+            img {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>맥주와 음식 웹 페이지</h1>
+        <img src="https://example.com/beer-image.jpg" alt="맥주 이미지">
+        <div id="soundControl">
+            <label for="soundCheckbox">소리 켜기</label>
+            <input type="checkbox" id="soundCheckbox">
+        </div>
+    </header>
+    <main>
+        <section>
+            <h2>환영합니다!</h2>
+            <p>이 웹 페이지는 맥주와 잘 어울리는 음식을 선택할 수 있습니다.</p>
+            <div class="quantity-control">
+                <button type="button" class="decrement" aria-label="피자 감소">-</button>
+                <input type="text" class="quantity" value="0" readonly aria-label="피자 수량">
+                <button type="button" class="increment" aria-label="피자 증가">+</button>
+                <span> 피자</span>
+            </div>
+            <div class="quantity-control">
+                <button type="button" class="decrement" aria-label="버거 감소">-</button>
+                <input type="text" class="quantity" value="0" readonly aria-label="버거 수량">
+                <button type="button" class="increment" aria-label="버거 증가">+</button>
+                <span> 버거</span>
+            </div>
+            <button type="button" id="orderButton" aria-label="주문하기">주문하기</button>
+        </section>
+    </main>
+    <footer>
+        <p>Copyright &copy; 2024. 모든 권리 보유.</p>
+    </footer>
+    <div id="modal" role="dialog" aria-modal="true" aria-labelledby="orderSummary">
+        <div id="modal-content">
+            <span class="modal-close" aria-label="닫기">&times;</span>
+            <p id="orderSummary">주문 내역을 확인해주세요.</p>
+            <button type="button" id="confirmOrder" aria-label="주문 확인">확인</button>
+            <button type="button" id="cancelOrder" aria-label="주문 취소">취소</button>
+        </div>
+    </div>
+    <script>
+        const incrementButtons = document.querySelectorAll('.increment');
+        const decrementButtons = document.querySelectorAll('.decrement');
+        const modal = document.getElementById('modal');
+        const modalClose = document.querySelector('.modal-close');
+        const orderButton = document.getElementById('orderButton');
+        const confirmOrder = document.getElementById('confirmOrder');
+        const cancelOrder = document.getElementById('cancelOrder');
+        const orderSummary = document.getElementById('orderSummary');
+        const soundCheckbox = document.getElementById('soundCheckbox');
+
+        const sound = new Audio('CHIME1.mp3');
+
+        incrementButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const quantity = button.previousElementSibling;
+                quantity.value = parseInt(quantity.value) + 1;
+            });
+        });
+
+        decrementButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const quantity = button.nextElementSibling;
+                if (parseInt(quantity.value) > 0) {
+                    quantity.value = parseInt(quantity.value) - 1;
+                }
+            });
+        });
+
+        orderButton.addEventListener('click', function() {
+            let message = '주문 내역:\n';
+            const quantities = document.querySelectorAll('.quantity');
+            quantities.forEach((quantity, index) => {
+                if (parseInt(quantity.value) > 0) {
+                    message += `${quantity.parentNode.textContent.trim()} - ${quantity.value}개\n`;
+                }
+            });
+            orderSummary.textContent = message;
+            modal.style.display = 'block';
+        });
+
+        modalClose.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        confirmOrder.addEventListener('click', function() {
+            if (soundCheckbox.checked) {
+                sound.play();
+            }
+            alert('주문이 확인되었습니다!');
+            modal.style.display = 'none';
+        });
+
+        cancelOrder.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
